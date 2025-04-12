@@ -1,0 +1,129 @@
+[gd_scene load_steps=15 format=3 uid="uid://c8jkqh1r14od6"]
+
+[ext_resource type="Script" path="res://Scenes/Module/Snake/Script/snake.gd" id="1_mskcj"]
+[ext_resource type="Texture2D" uid="uid://x4xmmiaiyjo2" path="res://Scenes/Module/Snake/Reourses/snake-Sheet.png" id="1_ruf3o"]
+[ext_resource type="Script" path="res://Scenes/Player/state_macine.gd" id="3_dn4wg"]
+[ext_resource type="Script" path="res://Scenes/Module/Snake/Script/idle.gd" id="4_0emon"]
+[ext_resource type="Script" path="res://Scenes/Module/Snake/Script/LeftMove.gd" id="4_gfm37"]
+[ext_resource type="Script" path="res://Scenes/Module/Snake/Script/Attack.gd" id="6_a5vk3"]
+[ext_resource type="Script" path="res://Scenes/Module/Snake/Script/jump.gd" id="7_oi06b"]
+[ext_resource type="Script" path="res://Scenes/Module/Snake/Script/cilmb.gd" id="8_chpn3"]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_lfus4"]
+atlas = ExtResource("1_ruf3o")
+region = Rect2(0, 0, 48, 48)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_p7vns"]
+atlas = ExtResource("1_ruf3o")
+region = Rect2(0, 0, 48, 48)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_othho"]
+atlas = ExtResource("1_ruf3o")
+region = Rect2(48, 0, 48, 48)
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_mro4o"]
+animations = [{
+"frames": [{
+"duration": 3.0,
+"texture": SubResource("AtlasTexture_lfus4")
+}],
+"loop": false,
+"name": &"Attack",
+"speed": 5.0
+}, {
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_p7vns")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_othho")
+}],
+"loop": true,
+"name": &"default",
+"speed": 3.0
+}]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_vq37p"]
+size = Vector2(42, 35)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_ov13t"]
+size = Vector2(45, 42)
+
+[node name="Snake" type="CharacterBody2D"]
+scale = Vector2(-1, 1)
+collision_layer = 2
+collision_mask = 772
+script = ExtResource("1_mskcj")
+
+[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="."]
+sprite_frames = SubResource("SpriteFrames_mro4o")
+animation = &"Attack"
+autoplay = "default"
+
+[node name="WallDetection" type="RayCast2D" parent="AnimatedSprite2D"]
+position = Vector2(-7, 19)
+target_position = Vector2(-43, 0)
+collision_mask = 4
+
+[node name="WallDetection2" type="RayCast2D" parent="AnimatedSprite2D/WallDetection"]
+position = Vector2(-6, -28)
+target_position = Vector2(-43, 0)
+collision_mask = 4
+
+[node name="DetectThePlayer" type="RayCast2D" parent="AnimatedSprite2D"]
+unique_name_in_owner = true
+position = Vector2(0, 10)
+target_position = Vector2(-420, 2)
+
+[node name="AttackDetection" type="RayCast2D" parent="AnimatedSprite2D"]
+position = Vector2(14, 4)
+scale = Vector2(1, 0.882247)
+target_position = Vector2(-58, 0)
+
+[node name="GroundDetection" type="RayCast2D" parent="."]
+rotation = 0.00221875
+target_position = Vector2(0.0998437, 44.9999)
+collision_mask = 4
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+position = Vector2(0, 7)
+shape = SubResource("RectangleShape2D_vq37p")
+
+[node name="StateMachine" type="Node2D" parent="." node_paths=PackedStringArray("current_state")]
+script = ExtResource("3_dn4wg")
+current_state = NodePath("Idle")
+
+[node name="Idle" type="Node2D" parent="StateMachine" node_paths=PackedStringArray("snake")]
+scale = Vector2(0.971919, 1.01981)
+script = ExtResource("4_0emon")
+snake = NodePath("../..")
+
+[node name="Move" type="Node2D" parent="StateMachine" node_paths=PackedStringArray("snake")]
+script = ExtResource("4_gfm37")
+snake = NodePath("../..")
+
+[node name="Attack" type="Node2D" parent="StateMachine"]
+script = ExtResource("6_a5vk3")
+
+[node name="Jump" type="Node2D" parent="StateMachine" node_paths=PackedStringArray("snake")]
+script = ExtResource("7_oi06b")
+snake = NodePath("../..")
+
+[node name="Cilmb" type="Node2D" parent="StateMachine" node_paths=PackedStringArray("snake")]
+script = ExtResource("8_chpn3")
+snake = NodePath("../..")
+
+[node name="VineDetection" type="RayCast2D" parent="."]
+target_position = Vector2(0, -94)
+collision_mask = 4
+collide_with_areas = true
+
+[node name="Area2D" type="Area2D" parent="."]
+collision_layer = 2
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Area2D"]
+position = Vector2(1.5, 4)
+shape = SubResource("RectangleShape2D_ov13t")
+debug_color = Color(0.872, 0.332, 0.28, 0.984)
+
+[connection signal="body_entered" from="Area2D" to="." method="_on_area_2d_body_entered"]
